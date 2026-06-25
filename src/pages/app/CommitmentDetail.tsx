@@ -1,0 +1,140 @@
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { motion } from "motion/react";
+import { Gauge } from "../../components/ui/Gauge";
+import { sampleCommitments } from "../../data/mock";
+import { Button } from "../../components/ui/Button";
+
+export function CommitmentDetail() {
+  const { id } = useParams();
+  const commitment = sampleCommitments.find(c => c.id === id) || sampleCommitments[0];
+  
+  const [addedHours, setAddedHours] = useState(0);
+  const [showPlan, setShowPlan] = useState(false);
+
+  // Simulated score recalculation
+  const currentRisk = Math.max(0, commitment.riskScore - (addedHours * 5));
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <Link to="/app" className="inline-flex items-center gap-2 text-sm font-medium text-ink/70 hover:text-ink mb-8 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Radar
+      </Link>
+
+      <div className="mb-12">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="px-2 py-1 rounded-none bg-paper border border-rule text-xs uppercase tracking-widest font-bold text-ink/70">
+            {commitment.category}
+          </span>
+          <span className="font-mono text-sm text-ink/60">{commitment.daysRemaining} days left</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl">{commitment.title}</h1>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-12">
+        {/* Left Col: Gauge & Ledger */}
+        <div className="space-y-12">
+          <div className="flex flex-col items-center">
+            <Gauge value={currentRisk} className="mb-6 scale-125" />
+            <div className="text-center">
+              <div className="font-display text-6xl text-ink leading-none">{currentRisk}%</div>
+              <div className="text-sm font-sans font-medium uppercase tracking-wider text-ink/50 mt-2">Current Risk</div>
+            </div>
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, rotateX: 60 }}
+            animate={{ opacity: 1, rotateX: 0 }}
+            transition={{ duration: 0.6, type: "spring" }}
+            className="bg-[#1A1A1A] border-t-2 border-amber rounded-none p-6 shadow-sm preserve-3d"
+            style={{ perspective: 1000 }}
+          >
+            <h2 className="text-xl mb-6">Why this score</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-2 border-b border-rule">
+                <span className="font-sans text-ink/70 text-sm">Days Remaining</span>
+                <span className="font-mono text-ink">{commitment.daysRemaining}</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-rule">
+                <span className="font-sans text-ink/70 text-sm">Est. Hours Needed</span>
+                <span className="font-mono text-ink">24.5</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-rule">
+                <span className="font-sans text-ink/70 text-sm">Free Calendar Hours</span>
+                <span className="font-mono text-ink">12.0</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-rule">
+                <span className="font-sans text-ink/70 text-sm">Your On-Time Rate</span>
+                <span className="font-mono text-amber">65%</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right Col: Simulator & Recovery */}
+        <div className="space-y-8">
+          <div className="bg-[#1A1A1A] border-t-2 border-amber rounded-none p-6">
+            <h2 className="text-xl mb-2">What if...</h2>
+            <p className="text-sm text-ink/70 mb-8">See how changes to your effort affect the risk score.</p>
+            
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <label className="font-sans font-medium text-sm text-ink">Add daily study hours</label>
+                <span className="font-mono text-ink bg-transparent px-2 py-1 border border-rule rounded-none text-sm">+{addedHours}h/day</span>
+              </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="6" 
+                step="0.5"
+                value={addedHours}
+                onChange={(e) => setAddedHours(Number(e.target.value))}
+                className="w-full accent-amber"
+              />
+            </div>
+
+            {!showPlan ? (
+              <Button onClick={() => setShowPlan(true)} className="w-full">
+                Generate recovery plan
+              </Button>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="bg-[#1A1A1A] border border-amber/20 rounded-none p-5 mt-6"
+              >
+                <h3 className="text-lg font-medium text-ink mb-2">Recovery Plan</h3>
+                <p className="text-sm text-ink/80 leading-relaxed mb-4">
+                  Based on your calendar, you have a 12.5 hour deficit. To hit this deadline, you must commit to +{Math.max(2, addedHours)} hours per day. 
+                </p>
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
+                    <p className="text-sm text-ink">Cancel "Coffee with Rahul" on Thursday to recover 2 hours.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
+                    <p className="text-sm text-ink">Block 8PM - 10PM daily strictly for this task.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+          
+          {commitment.opportunityLoss > 0 && (
+            <div className="bg-[#1A1A1A] border border-brick/20 rounded-none p-6 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-brick/10 flex items-center justify-center shrink-0">
+                <span className="text-brick font-bold">₹</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-ink mb-1">Opportunity Cost</h3>
+                <p className="text-sm text-ink/70">Missing this deadline will cost you an estimated <strong className="font-mono text-brick font-medium">₹{commitment.opportunityLoss.toLocaleString("en-IN")}</strong> in potential stipends.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

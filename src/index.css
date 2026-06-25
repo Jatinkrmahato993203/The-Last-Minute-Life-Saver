@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #FFFFFF;
+  --color-paper: #0F0F0F;
+  --color-amber: #FFB800;
+  --color-sage: #00FF9D;
+  --color-burnt: #FF5500;
+  --color-brick: #FF0033;
+  --color-rule: rgba(255, 255, 255, 0.1);
+  --color-ink-text: #FFFFFF;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink-text);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, .font-display {
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+  }
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+}
+
