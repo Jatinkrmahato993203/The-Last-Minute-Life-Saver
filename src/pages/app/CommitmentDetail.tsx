@@ -5,16 +5,61 @@ import { motion } from "motion/react";
 import { Gauge } from "../../components/ui/Gauge";
 import { sampleCommitments } from "../../data/mock";
 import { Button } from "../../components/ui/Button";
+import { useAppStore } from "../../store";
 
 export function CommitmentDetail() {
   const { id } = useParams();
   const commitment = sampleCommitments.find(c => c.id === id) || sampleCommitments[0];
+  const { successRate } = useAppStore();
   
   const [addedHours, setAddedHours] = useState(0);
   const [showPlan, setShowPlan] = useState(false);
+  const [planText, setPlanText] = useState("");
+  const [loadingPlan, setLoadingPlan] = useState(false);
 
-  // Simulated score recalculation
-  const currentRisk = Math.max(0, commitment.riskScore - (addedHours * 5));
+  // Dynamic ledger values based on commitment to avoid identical hardcoded values
+  const seed = parseInt(commitment.id, 10) || 1;
+  const estHoursNeeded = 10 + (seed * 5); // Example: 15, 20, 25...
+  const freeCalendarHours = Math.max(2, estHoursNeeded - 5 - (seed * 2)); // Example: 8, 11...
+  const userRate = successRate * 10; // 0-10 to 0-100%
+  
+  // Calculate risk properly
+  const totalFreeHours = freeCalendarHours + (addedHours * commitment.daysRemaining);
+  const hourRatio = totalFreeHours > 0 ? estHoursNeeded / totalFreeHours : 2;
+  const deficit = Math.max(0, estHoursNeeded - totalFreeHours);
+  
+  // f(days_remaining, estimated_task_hours / available_free_calendar_hours, user_historical_on_time_rate)
+  let calculatedRisk = 50; 
+  if (hourRatio > 1.2) calculatedRisk += 30;
+  else if (hourRatio < 0.8) calculatedRisk -= 20;
+  
+  calculatedRisk += (100 - userRate) * 0.4; // lower history = higher risk
+  if (commitment.daysRemaining < 4) calculatedRisk += 20;
+  
+  const currentRisk = Math.min(100, Math.max(0, Math.round(calculatedRisk)));
+
+  const handleGeneratePlan = async () => {
+    setShowPlan(true);
+    setLoadingPlan(true);
+    try {
+      const response = await fetch("/api/generate-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          commitment,
+          addedHours,
+          deficit,
+          currentRisk
+        })
+      });
+      const data = await response.json();
+      setPlanText(data.plan);
+    } catch (e) {
+      setPlanText("Block out time on your calendar daily and remove distractions.");
+    } finally {
+      setLoadingPlan(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -58,15 +103,15 @@ export function CommitmentDetail() {
               </div>
               <div className="flex items-center justify-between py-2 border-b border-rule">
                 <span className="font-sans text-ink/70 text-sm">Est. Hours Needed</span>
-                <span className="font-mono text-ink">24.5</span>
+                <span className="font-mono text-ink">{estHoursNeeded.toFixed(1)}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-rule">
                 <span className="font-sans text-ink/70 text-sm">Free Calendar Hours</span>
-                <span className="font-mono text-ink">12.0</span>
+                <span className="font-mono text-ink">{freeCalendarHours.toFixed(1)}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-rule">
                 <span className="font-sans text-ink/70 text-sm">Your On-Time Rate</span>
-                <span className="font-mono text-amber">65%</span>
+                <span className="font-mono text-amber">{userRate}%</span>
               </div>
             </div>
           </motion.div>
@@ -95,7 +140,7 @@ export function CommitmentDetail() {
             </div>
 
             {!showPlan ? (
-              <Button onClick={() => setShowPlan(true)} className="w-full">
+              <Button onClick={handleGeneratePlan} className="w-full">
                 Generate recovery plan
               </Button>
             ) : (
@@ -105,19 +150,21 @@ export function CommitmentDetail() {
                 className="bg-[#1A1A1A] border border-amber/20 rounded-none p-5 mt-6"
               >
                 <h3 className="text-lg font-medium text-ink mb-2">Recovery Plan</h3>
-                <p className="text-sm text-ink/80 leading-relaxed mb-4">
-                  Based on your calendar, you have a 12.5 hour deficit. To hit this deadline, you must commit to +{Math.max(2, addedHours)} hours per day. 
-                </p>
-                <div className="space-y-3">
-                  <div className="flex gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
-                    <p className="text-sm text-ink">Cancel "Coffee with Rahul" on Thursday to recover 2 hours.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
-                    <p className="text-sm text-ink">Block 8PM - 10PM daily strictly for this task.</p>
-                  </div>
-                </div>
+                {loadingPlan ? (
+                  <p className="text-sm text-ink/80 leading-relaxed mb-4">Analyzing options...</p>
+                ) : (
+                  <>
+                    <p className="text-sm text-ink/80 leading-relaxed mb-4">
+                      Based on your calendar, you have a {deficit.toFixed(1)} hour deficit. To hit this deadline, you must commit to +{Math.max(2, addedHours)} hours per day. 
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
+                        <p className="text-sm text-ink">{planText}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </motion.div>
             )}
           </div>

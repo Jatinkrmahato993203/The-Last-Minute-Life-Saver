@@ -1,8 +1,37 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import firebaseConfig from '../../../firebase-applet-config.json';
+import { useAppStore } from "../../store";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/calendar.readonly');
 
 export function Signup() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const { setAccessToken } = useAppStore();
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        setAccessToken(credential.accessToken);
+      }
+      navigate("/onboarding/baseline");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to sign in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex-1 flex items-center justify-center py-20 px-6">
@@ -13,8 +42,8 @@ export function Signup() {
         </p>
         
         <div className="space-y-4">
-          <Button onClick={() => navigate("/onboarding/baseline")} className="w-full">
-            Continue with Google
+          <Button onClick={handleLogin} disabled={loading} className="w-full">
+            {loading ? "Connecting..." : "Continue with Google"}
           </Button>
           <Button variant="ghost" onClick={() => navigate("/app")} className="w-full">
             Skip for now

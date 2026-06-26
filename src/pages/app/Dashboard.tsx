@@ -44,7 +44,7 @@ export function Dashboard() {
               to={`/app/commitment/${item.id}`}
               className="group block relative bg-[#1A1A1A] border-t-2 border-amber rounded-none overflow-hidden hover:bg-[#222] transition-all hover:-translate-y-0.5"
             >
-              <div className={`absolute left-0 top-0 bottom-0 w-1 ${getRiskColor(item.riskScore)} transition-colors group-hover:brightness-110 hidden`} />
+              <div className={`absolute left-0 top-0 bottom-0 w-1 ${getRiskColor(item.riskScore)} transition-colors group-hover:brightness-110`} />
               
               <div className="p-6 pl-8 flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">

@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
+import { useAppStore } from "../../store";
 
 export function Baseline() {
   const navigate = useNavigate();
-  const [successRate, setSuccessRate] = useState(7);
+  const { successRate, setSuccessRate } = useAppStore();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-paper p-6">
