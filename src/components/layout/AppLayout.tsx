@@ -1,6 +1,7 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { Radar, SlidersHorizontal, ArrowLeftRight, Settings } from "lucide-react";
+import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
+import { Radar, SlidersHorizontal, Settings } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { useAppStore } from "../../store";
 
 const NAV_ITEMS = [
   { label: "Radar", icon: Radar, to: "/app" },
@@ -10,6 +11,11 @@ const NAV_ITEMS = [
 
 export function AppLayout() {
   const location = useLocation();
+  const { accessToken } = useAppStore();
+
+  if (!accessToken) {
+    return <Navigate to="/auth/login" replace />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-paper">

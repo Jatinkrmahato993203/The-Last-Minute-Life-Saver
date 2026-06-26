@@ -19,10 +19,26 @@ async function startServer() {
 
   app.use(express.json());
 
+  const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  };
+
   // AI Route: Generate Recovery Plan
-  app.post("/api/generate-plan", limiter, async (req, res) => {
+  app.post("/api/generate-plan", requireAuth, limiter, async (req, res) => {
     try {
       const { commitment, addedHours, deficit, currentRisk } = req.body;
+      
+      if (!commitment || typeof commitment.title !== "string" || commitment.title.length > 100 || typeof commitment.category !== "string") {
+        return res.status(400).json({ error: "Invalid commitment details" });
+      }
+      
+      if (typeof addedHours !== "number" || typeof deficit !== "number" || typeof currentRisk !== "number") {
+        return res.status(400).json({ error: "Invalid metrics" });
+      }
       
       const prompt = `You are Oracle, a direct, calm productivity assistant.
 The user is at risk of missing a commitment.

@@ -1,10 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAppStore } from "../../store";
 import { Button } from "../../components/ui/Button";
 
 export function Settings() {
-  const { successRate, setSuccessRate } = useAppStore();
+  const navigate = useNavigate();
+  const { successRate, setSuccessRate, accessToken, setAccessToken } = useAppStore();
+
+  const handleDisconnect = () => {
+    setAccessToken(null);
+    navigate("/auth/login");
+  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -43,10 +49,14 @@ export function Settings() {
           
           <div className="flex items-center justify-between border-t border-rule pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-sage" />
+              <div className={`w-2 h-2 rounded-full ${accessToken ? 'bg-sage' : 'bg-brick'}`} />
               <span className="font-medium text-ink">Google Calendar</span>
             </div>
-            <Button variant="ghost" className="text-brick hover:text-brick hover:bg-brick/5">Disconnect</Button>
+            {accessToken ? (
+              <Button onClick={handleDisconnect} variant="ghost" className="text-brick hover:text-brick hover:bg-brick/5">Disconnect</Button>
+            ) : (
+              <span className="text-ink/50 text-sm">Disconnected</span>
+            )}
           </div>
         </section>
       </div>

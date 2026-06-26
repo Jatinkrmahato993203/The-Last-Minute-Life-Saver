@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { sampleCommitments } from "../../data/mock";
+import { useAppStore } from "../../store";
 
 export function LossOverview() {
-  const totalLoss = sampleCommitments.reduce((acc, curr) => acc + curr.opportunityLoss, 0);
+  const { commitments } = useAppStore();
+  const totalLoss = commitments.reduce((acc, curr) => acc + curr.opportunityLoss, 0);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -26,7 +27,7 @@ export function LossOverview() {
       </div>
       
       <div className="space-y-4">
-        {sampleCommitments.filter(c => c.opportunityLoss > 0).map(item => (
+        {commitments.filter(c => c.opportunityLoss > 0).map(item => (
           <div key={item.id} className="bg-white border border-rule p-6 flex items-center justify-between shadow-sm">
             <div>
               <h3 className="text-lg font-medium text-ink mb-1">{item.title}</h3>

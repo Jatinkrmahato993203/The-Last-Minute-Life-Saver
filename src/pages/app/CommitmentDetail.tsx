@@ -1,22 +1,37 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { Gauge } from "../../components/ui/Gauge";
-import { sampleCommitments } from "../../data/mock";
 import { Button } from "../../components/ui/Button";
 import { useAppStore } from "../../store";
+import { getFreeBusy } from "../../lib/calendar";
 
 export function CommitmentDetail() {
   const { id } = useParams();
-  const { successRate } = useAppStore();
+  const navigate = useNavigate();
+  const { successRate, commitments, accessToken, deleteCommitment, updateCommitment } = useAppStore();
   
-  const commitment = sampleCommitments.find(c => c.id === id);
+  const commitment = commitments.find(c => c.id === id);
   
   const [addedHours, setAddedHours] = useState(0);
   const [showPlan, setShowPlan] = useState(false);
   const [planText, setPlanText] = useState("");
   const [loadingPlan, setLoadingPlan] = useState(false);
+
+  // Dynamic ledger values based on commitment to avoid identical hardcoded values
+  const seed = commitment ? parseInt(commitment.id, 10) || 1 : 1;
+  const estHoursNeeded = commitment?.estHoursNeeded || (10 + (seed * 5)); // Use provided or generate
+  
+  const [freeCalendarHours, setFreeCalendarHours] = useState<number>(Math.max(2, estHoursNeeded - 5 - (seed * 2)));
+
+  useEffect(() => {
+    if (accessToken && commitment) {
+      getFreeBusy(accessToken, commitment.daysRemaining).then(hours => {
+        if (hours !== null) setFreeCalendarHours(Math.round(hours));
+      });
+    }
+  }, [accessToken, commitment]);
 
   if (!commitment) {
     return (
@@ -30,10 +45,6 @@ export function CommitmentDetail() {
     );
   }
 
-  // Dynamic ledger values based on commitment to avoid identical hardcoded values
-  const seed = parseInt(commitment.id, 10) || 1;
-  const estHoursNeeded = 10 + (seed * 5); // Example: 15, 20, 25...
-  const freeCalendarHours = Math.max(2, estHoursNeeded - 5 - (seed * 2)); // Example: 8, 11...
   const userRate = successRate * 10; // 0-10 to 0-100%
   
   // Calculate risk properly
@@ -51,13 +62,22 @@ export function CommitmentDetail() {
   
   const currentRisk = Math.min(100, Math.max(0, Math.round(calculatedRisk)));
 
+  useEffect(() => {
+    if (commitment && commitment.riskScore !== currentRisk) {
+      updateCommitment(commitment.id, { riskScore: currentRisk });
+    }
+  }, [currentRisk, commitment, updateCommitment]);
+
   const handleGeneratePlan = async () => {
     setShowPlan(true);
     setLoadingPlan(true);
     try {
       const response = await fetch("/api/generate-plan", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
+        },
         body: JSON.stringify({
           commitment,
           addedHours,
@@ -74,11 +94,23 @@ export function CommitmentDetail() {
     }
   };
 
+  const handleDelete = () => {
+    if (id) {
+      deleteCommitment(id);
+      navigate("/app");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
-      <Link to="/app" className="inline-flex items-center gap-2 text-sm font-medium text-ink/70 hover:text-ink mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Radar
-      </Link>
+      <div className="flex items-center justify-between mb-8">
+        <Link to="/app" className="inline-flex items-center gap-2 text-sm font-medium text-ink/70 hover:text-ink transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Radar
+        </Link>
+        <Button variant="ghost" className="text-brick hover:bg-brick/5 h-8 px-3 text-xs" onClick={handleDelete}>
+          <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+        </Button>
+      </div>
 
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-3">

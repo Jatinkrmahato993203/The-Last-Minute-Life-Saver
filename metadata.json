@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "Oracle",
+  "description": "Opportunity loss calculator and commitment manager",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

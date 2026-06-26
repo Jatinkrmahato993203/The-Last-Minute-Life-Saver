@@ -1,10 +1,20 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { sampleCommitments } from "../../data/mock";
+import { motion, AnimatePresence } from "motion/react";
+import { useAppStore } from "../../store";
+import { Button } from "../../components/ui/Button";
 
 export function Dashboard() {
-  const sortedCommitments = [...sampleCommitments].sort((a, b) => b.riskScore - a.riskScore);
+  const { commitments, addCommitment } = useAppStore();
+  const sortedCommitments = [...commitments].sort((a, b) => b.riskScore - a.riskScore);
   const totalRiskAmount = sortedCommitments.reduce((acc, curr) => acc + curr.opportunityLoss, 0);
+  
+  const [isAdding, setIsAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newCategory, setNewCategory] = useState("Assignment");
+  const [newDays, setNewDays] = useState(7);
+  const [newHours, setNewHours] = useState(10);
+  const [newLoss, setNewLoss] = useState(0);
 
   const getRiskColor = (score: number) => {
     if (score > 90) return "bg-brick";
@@ -13,25 +23,98 @@ export function Dashboard() {
     return "bg-sage";
   };
 
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle) return;
+    
+    addCommitment({
+      id: Math.random().toString(36).substring(7),
+      title: newTitle,
+      daysRemaining: newDays,
+      riskScore: 50, // This gets recalculated by CommitmentDetail
+      opportunityLoss: newLoss,
+      category: newCategory,
+      estHoursNeeded: newHours
+    });
+    
+    setNewTitle("");
+    setNewDays(7);
+    setNewHours(10);
+    setNewLoss(0);
+    setIsAdding(false);
+  };
+
   return (
     <div className="max-w-3xl mx-auto">
-      <header className="mb-10">
-        <h1 className="text-4xl mb-4">Your risk radar.</h1>
-        <div className="flex items-center gap-4 bg-white border border-rule px-6 py-4 rounded-none shadow-sm">
-          <div className="flex-1">
-            <span className="block text-sm font-sans font-medium text-ink/70">Total Opportunity Risk</span>
-            <span className="block text-2xl font-mono text-ink mt-1">₹{totalRiskAmount.toLocaleString("en-IN")}</span>
+      <header className="mb-10 flex items-end justify-between">
+        <div>
+          <h1 className="text-4xl mb-4">Your risk radar.</h1>
+          <div className="flex items-center gap-4 bg-white border border-rule px-6 py-4 rounded-none shadow-sm">
+            <div className="flex-1">
+              <span className="block text-sm font-sans font-medium text-ink/70">Total Opportunity Risk</span>
+              <span className="block text-2xl font-mono text-ink mt-1">₹{totalRiskAmount.toLocaleString("en-IN")}</span>
+            </div>
+            <div className="w-px h-10 bg-rule"></div>
+            <div className="flex-1 text-right">
+              <span className="block text-sm font-sans font-medium text-ink/70">Active Commitments</span>
+              <span className="block text-2xl font-mono text-ink mt-1">{sortedCommitments.length}</span>
+            </div>
           </div>
-          <div className="w-px h-10 bg-rule"></div>
-          <div className="flex-1 text-right">
-            <span className="block text-sm font-sans font-medium text-ink/70">Active Commitments</span>
-            <span className="block text-2xl font-mono text-ink mt-1">{sortedCommitments.length}</span>
-          </div>
+        </div>
+        <div className="pb-4">
+          <Button onClick={() => setIsAdding(!isAdding)}>{isAdding ? "Cancel" : "Add Task"}</Button>
         </div>
       </header>
 
-      <div className="space-y-4">
-        {sortedCommitments.map((item, index) => (
+      <AnimatePresence>
+        {isAdding && (
+          <motion.form 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            onSubmit={handleAddSubmit}
+            className="mb-8 bg-white border border-rule shadow-sm p-6 space-y-4 overflow-hidden"
+          >
+            <div>
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full border border-rule px-3 py-2" required placeholder="Data Structures Final" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Category</label>
+                <select value={newCategory} onChange={e => setNewCategory(e.target.value)} className="w-full border border-rule px-3 py-2">
+                  <option>Exam</option>
+                  <option>Assignment</option>
+                  <option>Placement</option>
+                  <option>Scholarship</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Days Remaining</label>
+                <input type="number" value={newDays} onChange={e => setNewDays(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="1" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Est. Hours Needed</label>
+                <input type="number" value={newHours} onChange={e => setNewHours(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="1" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Opportunity Cost (₹)</label>
+                <input type="number" value={newLoss} onChange={e => setNewLoss(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="0" />
+              </div>
+            </div>
+            <Button type="submit" className="w-full">Create Commitment</Button>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      {sortedCommitments.length === 0 ? (
+        <div className="text-center py-20 bg-white border border-rule shadow-sm">
+          <p className="text-ink/70 mb-4">No active commitments.</p>
+          <Button onClick={() => setIsAdding(true)}>Add your first task</Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {sortedCommitments.map((item, index) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, rotateX: 80, y: 20 }}
@@ -75,7 +158,8 @@ export function Dashboard() {
             </Link>
           </motion.div>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

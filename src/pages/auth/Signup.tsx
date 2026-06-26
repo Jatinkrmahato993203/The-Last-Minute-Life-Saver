@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import firebaseConfig from '../../../firebase-applet-config.json';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { getFirebaseAuth, getGoogleProvider } from "../../lib/firebase";
 import { useAppStore } from "../../store";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/calendar.freebusy');
 
 export function Signup() {
   const navigate = useNavigate();
@@ -20,7 +14,9 @@ export function Signup() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, provider);
+      const auth = getFirebaseAuth();
+      const googleProvider = getGoogleProvider();
+      const result = await signInWithPopup(auth, googleProvider);
       const credential = GoogleAuthProvider.credentialFromResult(result);
       if (credential?.accessToken) {
         setAccessToken(credential.accessToken);
