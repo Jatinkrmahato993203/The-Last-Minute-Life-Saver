@@ -20,7 +20,9 @@ export function AppLayout() {
         </Link>
         <nav className="flex-1 space-y-2">
           {NAV_ITEMS.map((item) => {
-            const isActive = location.pathname === item.to || (item.to !== "/app" && location.pathname.startsWith(item.to));
+            const isActive = location.pathname === item.to || 
+                             (item.to !== "/app" && location.pathname.startsWith(item.to)) ||
+                             (item.to === "/app" && location.pathname.startsWith("/app/commitment"));
             return (
               <Link
                 key={item.label}
@@ -51,7 +53,9 @@ export function AppLayout() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-paper border-t border-rule pb-[env(safe-area-inset-bottom)] z-50">
         <div className="flex justify-around items-center h-16">
           {NAV_ITEMS.map((item) => {
-            const isActive = location.pathname === item.to || (item.to !== "/app" && location.pathname.startsWith(item.to));
+            const isActive = location.pathname === item.to || 
+                             (item.to !== "/app" && location.pathname.startsWith(item.to)) ||
+                             (item.to === "/app" && location.pathname.startsWith("/app/commitment"));
             return (
               <Link
                 key={item.label}

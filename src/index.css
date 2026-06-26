@@ -1,18 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #FFFFFF;
-  --color-paper: #0F0F0F;
-  --color-amber: #FFB800;
-  --color-sage: #00FF9D;
-  --color-burnt: #FF5500;
-  --color-brick: #FF0033;
-  --color-rule: rgba(255, 255, 255, 0.1);
-  --color-ink-text: #FFFFFF;
+  --color-ink: #1A1A1A;
+  --color-paper: #F4F2E9;
+  --color-amber: #D97706;
+  --color-sage: #059669;
+  --color-burnt: #EA580C;
+  --color-brick: #B91C1C;
+  --color-rule: rgba(0, 0, 0, 0.1);
+  --color-ink-text: #1A1A1A;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
 }
 
 @layer base {

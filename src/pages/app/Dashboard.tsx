@@ -17,7 +17,7 @@ export function Dashboard() {
     <div className="max-w-3xl mx-auto">
       <header className="mb-10">
         <h1 className="text-4xl mb-4">Your risk radar.</h1>
-        <div className="flex items-center gap-4 bg-[#1A1A1A] border border-rule px-6 py-4 rounded-none shadow-sm">
+        <div className="flex items-center gap-4 bg-white border border-rule px-6 py-4 rounded-none shadow-sm">
           <div className="flex-1">
             <span className="block text-sm font-sans font-medium text-ink/70">Total Opportunity Risk</span>
             <span className="block text-2xl font-mono text-ink mt-1">₹{totalRiskAmount.toLocaleString("en-IN")}</span>
@@ -42,7 +42,7 @@ export function Dashboard() {
           >
             <Link
               to={`/app/commitment/${item.id}`}
-              className="group block relative bg-[#1A1A1A] border-t-2 border-amber rounded-none overflow-hidden hover:bg-[#222] transition-all hover:-translate-y-0.5"
+              className="group block relative bg-white border border-rule shadow-sm rounded-none overflow-hidden hover:bg-black/5 transition-all hover:-translate-y-0.5"
             >
               <div className={`absolute left-0 top-0 bottom-0 w-1 ${getRiskColor(item.riskScore)} transition-colors group-hover:brightness-110`} />
               

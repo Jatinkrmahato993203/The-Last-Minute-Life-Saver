@@ -21,9 +21,9 @@ export function MarketingLayout() {
             <Link to="/auth/login" className="hidden md:block font-sans font-bold text-[10px] uppercase tracking-widest text-ink hover:text-amber transition-colors">
               Log in
             </Link>
-            <Link to="/auth/signup" className="inline-flex items-center justify-center font-sans font-bold uppercase tracking-widest text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber disabled:pointer-events-none disabled:opacity-50 h-12 px-8 border-2 bg-amber border-amber text-paper hover:bg-transparent hover:text-amber transition-all">
-              Sign up
-            </Link>
+            <Button asChild>
+              <Link to="/auth/signup">Sign up</Link>
+            </Button>
           </div>
         </div>
       </header>

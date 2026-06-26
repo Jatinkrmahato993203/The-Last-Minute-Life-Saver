@@ -9,13 +9,26 @@ import { useAppStore } from "../../store";
 
 export function CommitmentDetail() {
   const { id } = useParams();
-  const commitment = sampleCommitments.find(c => c.id === id) || sampleCommitments[0];
   const { successRate } = useAppStore();
+  
+  const commitment = sampleCommitments.find(c => c.id === id);
   
   const [addedHours, setAddedHours] = useState(0);
   const [showPlan, setShowPlan] = useState(false);
   const [planText, setPlanText] = useState("");
   const [loadingPlan, setLoadingPlan] = useState(false);
+
+  if (!commitment) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 text-center">
+        <h1 className="text-3xl font-display mb-4 text-ink">Commitment Not Found</h1>
+        <p className="text-ink/70 mb-8">The commitment you are looking for does not exist.</p>
+        <Button asChild>
+          <Link to="/app">Back to Radar</Link>
+        </Button>
+      </div>
+    );
+  }
 
   // Dynamic ledger values based on commitment to avoid identical hardcoded values
   const seed = parseInt(commitment.id, 10) || 1;
@@ -92,7 +105,7 @@ export function CommitmentDetail() {
             initial={{ opacity: 0, rotateX: 60 }}
             animate={{ opacity: 1, rotateX: 0 }}
             transition={{ duration: 0.6, type: "spring" }}
-            className="bg-[#1A1A1A] border-t-2 border-amber rounded-none p-6 shadow-sm preserve-3d"
+            className="bg-white border border-rule shadow-sm rounded-none p-6 preserve-3d"
             style={{ perspective: 1000 }}
           >
             <h2 className="text-xl mb-6">Why this score</h2>
@@ -119,16 +132,17 @@ export function CommitmentDetail() {
 
         {/* Right Col: Simulator & Recovery */}
         <div className="space-y-8">
-          <div className="bg-[#1A1A1A] border-t-2 border-amber rounded-none p-6">
+          <div className="bg-white border border-rule shadow-sm rounded-none p-6">
             <h2 className="text-xl mb-2">What if...</h2>
             <p className="text-sm text-ink/70 mb-8">See how changes to your effort affect the risk score.</p>
             
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <label className="font-sans font-medium text-sm text-ink">Add daily study hours</label>
+                <label htmlFor="study-hours" className="font-sans font-medium text-sm text-ink">Add daily study hours</label>
                 <span className="font-mono text-ink bg-transparent px-2 py-1 border border-rule rounded-none text-sm">+{addedHours}h/day</span>
               </div>
               <input 
+                id="study-hours"
                 type="range" 
                 min="0" 
                 max="6" 
@@ -147,7 +161,7 @@ export function CommitmentDetail() {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="bg-[#1A1A1A] border border-amber/20 rounded-none p-5 mt-6"
+                className="bg-white border border-amber/20 shadow-sm rounded-none p-5 mt-6"
               >
                 <h3 className="text-lg font-medium text-ink mb-2">Recovery Plan</h3>
                 {loadingPlan ? (
@@ -170,7 +184,7 @@ export function CommitmentDetail() {
           </div>
           
           {commitment.opportunityLoss > 0 && (
-            <div className="bg-[#1A1A1A] border border-brick/20 rounded-none p-6 flex items-start gap-4">
+            <div className="bg-white border border-brick/20 shadow-sm rounded-none p-6 flex items-start gap-4">
               <div className="w-10 h-10 rounded-full bg-brick/10 flex items-center justify-center shrink-0">
                 <span className="text-brick font-bold">₹</span>
               </div>

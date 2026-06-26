@@ -5,11 +5,14 @@ import { Input } from "../../components/ui/Input";
 import { Gauge } from "../../components/ui/Gauge";
 
 export function Home() {
-  const [days, setDays] = useState(5);
+  const [daysInput, setDaysInput] = useState("5");
   const [category, setCategory] = useState("Internship");
 
+  const days = parseInt(daysInput, 10);
+  const isInvalid = isNaN(days) || days < 0;
+
   // Simple static calculation for the hero calculator
-  const baseRisk = days < 3 ? 85 : days < 7 ? 60 : 30;
+  const baseRisk = isInvalid ? "--" : (days < 3 ? 85 : days < 7 ? 60 : 30);
   const rupeeLoss = category === "Internship" ? 50000 : category === "Scholarship" ? 100000 : category === "Exam" ? 0 : 5000;
 
   return (
@@ -24,19 +27,20 @@ export function Home() {
             <p className="text-lg md:text-xl text-ink/80 mb-8 max-w-lg">
               Oracle calculates the real risk of missing your deadlines based on your history, and shows you exactly what slipping will cost in rupees.
             </p>
-            <Link to="/auth/signup" className="inline-flex items-center justify-center font-sans font-bold uppercase tracking-widest text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber disabled:pointer-events-none disabled:opacity-50 h-14 px-8 border-2 bg-amber border-amber text-paper hover:bg-transparent hover:text-amber transition-all">
-              Connect your calendar
-            </Link>
+            <Button asChild className="h-14">
+              <Link to="/auth/signup">Connect your calendar</Link>
+            </Button>
           </div>
 
           {/* Interactive Calculator */}
-          <div className="bg-[#1A1A1A] rounded-none p-8 border-t-2 border-amber">
-            <h2 className="font-display text-2xl mb-6">What's at risk this semester?</h2>
+          <div className="bg-white rounded-none p-8 border border-rule shadow-sm">
+            <h2 className="font-display text-2xl mb-6 text-ink">What's at risk this semester?</h2>
             
             <div className="space-y-6 mb-10">
               <div>
-                <label className="block font-sans text-xs uppercase tracking-widest font-bold text-ink/50 mb-2">If I miss my...</label>
+                <label htmlFor="category-select" className="block font-sans text-xs uppercase tracking-widest font-bold text-ink/50 mb-2">If I miss my...</label>
                 <select 
+                  id="category-select"
                   className="w-full bg-transparent border-b border-rule py-2 font-mono text-ink focus:outline-none focus:border-amber transition-colors"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -49,12 +53,14 @@ export function Home() {
               </div>
 
               <div>
-                <label className="block font-sans text-xs uppercase tracking-widest font-bold text-ink/50 mb-2">And it's due in...</label>
+                <label htmlFor="days-input" className="block font-sans text-xs uppercase tracking-widest font-bold text-ink/50 mb-2">And it's due in...</label>
                 <div className="flex items-baseline gap-2">
                   <Input 
+                    id="days-input"
                     type="number" 
-                    value={days} 
-                    onChange={(e) => setDays(Number(e.target.value))}
+                    min="0"
+                    value={daysInput} 
+                    onChange={(e) => setDaysInput(e.target.value)}
                     className="w-20 font-mono text-xl"
                   />
                   <span className="font-mono text-ink/70">days</span>
@@ -65,7 +71,7 @@ export function Home() {
             <div className="pt-6 border-t border-rule">
               <div className="flex items-center justify-between mb-4">
                 <span className="font-sans text-xs uppercase tracking-widest font-bold text-ink/50">Estimated Risk</span>
-                <span className="font-mono text-2xl text-amber">{baseRisk}%</span>
+                <span className="font-mono text-2xl text-amber">{isInvalid ? "--" : `${baseRisk}%`}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-sans text-xs uppercase tracking-widest font-bold text-ink/50">Opportunity Cost</span>
@@ -95,7 +101,10 @@ export function Home() {
             <div>
               <div className="font-mono text-amber text-lg mb-4">02. Calculate</div>
               <h3 className="text-xl mb-3 text-paper">Transparent Score</h3>
-              <p className="text-paper/70 text-sm">No black-box AI. A clear mathematical formula comparing the work needed vs your track record.</p>
+              <p className="text-paper/70 text-sm mb-4">No black-box AI. A clear mathematical formula comparing the work needed vs your track record.</p>
+              <Link to="/how-it-works" className="text-amber text-sm font-bold uppercase tracking-widest hover:underline decoration-2 underline-offset-4">
+                See the formula
+              </Link>
             </div>
             <div>
               <div className="font-mono text-amber text-lg mb-4">03. Recover</div>
@@ -109,9 +118,9 @@ export function Home() {
       {/* CTA */}
       <section className="py-32 px-6 text-center">
         <h2 className="text-4xl mb-8">Stop guessing. See your real score.</h2>
-        <Link to="/auth/signup" className="inline-flex items-center justify-center font-sans font-bold uppercase tracking-widest text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber disabled:pointer-events-none disabled:opacity-50 h-14 px-8 border-2 bg-amber border-amber text-paper hover:bg-transparent hover:text-amber transition-all">
-          Start for free
-        </Link>
+        <Button asChild className="h-14">
+          <Link to="/auth/signup">Start for free</Link>
+        </Button>
       </section>
     </div>
   );

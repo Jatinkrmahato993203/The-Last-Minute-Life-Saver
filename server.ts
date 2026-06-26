@@ -2,9 +2,16 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import rateLimit from "express-rate-limit";
 import "dotenv/config";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per window
+  message: { error: "Too many requests, please try again later." }
+});
 
 async function startServer() {
   const app = express();
@@ -13,7 +20,7 @@ async function startServer() {
   app.use(express.json());
 
   // AI Route: Generate Recovery Plan
-  app.post("/api/generate-plan", async (req, res) => {
+  app.post("/api/generate-plan", limiter, async (req, res) => {
     try {
       const { commitment, addedHours, deficit, currentRisk } = req.body;
       

@@ -10,11 +10,14 @@ import { Signup } from "./pages/auth/Signup";
 import { Baseline } from "./pages/onboarding/Baseline";
 import { Dashboard } from "./pages/app/Dashboard";
 import { CommitmentDetail } from "./pages/app/CommitmentDetail";
-
-// Placeholder components for routing
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="py-20 text-center"><h1 className="text-3xl">{title}</h1></div>
-);
+import { LossOverview } from "./pages/app/LossOverview";
+import { Settings } from "./pages/app/Settings";
+import { HowItWorks } from "./pages/marketing/HowItWorks";
+import { Pricing } from "./pages/marketing/Pricing";
+import { About } from "./pages/marketing/About";
+import { Privacy } from "./pages/marketing/Privacy";
+import { Terms } from "./pages/marketing/Terms";
+import { Login } from "./pages/auth/Login";
 
 export default function App() {
   return (
@@ -23,12 +26,12 @@ export default function App() {
         {/* Marketing Routes */}
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/how-it-works" element={<Placeholder title="How It Works" />} />
-          <Route path="/pricing" element={<Placeholder title="Pricing" />} />
-          <Route path="/about" element={<Placeholder title="About / Trust" />} />
-          <Route path="/privacy" element={<Placeholder title="Privacy Policy" />} />
-          <Route path="/terms" element={<Placeholder title="Terms of Service" />} />
-          <Route path="/auth/login" element={<Placeholder title="Log in" />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signup" element={<Signup />} />
         </Route>
 
@@ -38,8 +41,8 @@ export default function App() {
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="commitment/:id" element={<CommitmentDetail />} />
-          <Route path="loss-overview" element={<Placeholder title="Opportunity Loss Overview" />} />
-          <Route path="settings" element={<Placeholder title="Settings" />} />
+          <Route path="loss-overview" element={<LossOverview />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -61,6 +61,7 @@ export function Gauge({ value, className }: GaugeProps) {
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={100}
+      aria-label="Risk score gauge"
       role="meter"
     >
       <motion.div
