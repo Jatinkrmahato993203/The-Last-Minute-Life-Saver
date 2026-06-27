@@ -19,12 +19,22 @@ async function startServer() {
 
   app.use(express.json());
 
-  const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const requireAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    next();
+    const token = authHeader.split(" ")[1];
+    
+    try {
+      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token}`);
+      if (!response.ok) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+      next();
+    } catch (e) {
+      return res.status(401).json({ error: "Token verification failed" });
+    }
   };
 
   // AI Route: Generate Recovery Plan

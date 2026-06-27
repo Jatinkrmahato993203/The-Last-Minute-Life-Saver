@@ -11,11 +11,6 @@ const NAV_ITEMS = [
 
 export function AppLayout() {
   const location = useLocation();
-  const { accessToken } = useAppStore();
-
-  if (!accessToken) {
-    return <Navigate to="/auth/login" replace />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-paper">

@@ -29,10 +29,11 @@ export function Settings() {
           
           <div className="mb-6">
             <div className="flex justify-between items-end mb-4">
-              <span className="text-sm font-medium text-ink">Success Rate (Last 10 Deadlines)</span>
-              <span className="font-mono text-2xl text-amber">{successRate} / 10</span>
+              <label htmlFor="settings-success-rate" className="text-sm font-medium text-ink">Success Rate (Last 10 Deadlines)</label>
+              <span className="font-mono text-2xl text-amber" aria-hidden="true">{successRate} / 10</span>
             </div>
             <input 
+              id="settings-success-rate"
               type="range" 
               min="0" 
               max="10" 

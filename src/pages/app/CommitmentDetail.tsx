@@ -85,6 +85,11 @@ export function CommitmentDetail() {
           currentRisk
         })
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to generate plan");
+      }
+      
       const data = await response.json();
       setPlanText(data.plan);
     } catch (e) {
