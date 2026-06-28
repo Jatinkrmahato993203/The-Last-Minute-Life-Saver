@@ -26,12 +26,12 @@ export function CommitmentDetail() {
   const [freeCalendarHours, setFreeCalendarHours] = useState<number>(Math.max(2, estHoursNeeded - 5 - (seed * 2)));
 
   useEffect(() => {
-    if (accessToken && commitment) {
+    if (accessToken && commitment?.daysRemaining) {
       getFreeBusy(accessToken, commitment.daysRemaining).then(hours => {
         if (hours !== null) setFreeCalendarHours(Math.round(hours));
       });
     }
-  }, [accessToken, commitment]);
+  }, [accessToken, commitment?.daysRemaining]);
 
   if (!commitment) {
     return (
@@ -63,10 +63,10 @@ export function CommitmentDetail() {
   const currentRisk = Math.min(100, Math.max(0, Math.round(calculatedRisk)));
 
   useEffect(() => {
-    if (commitment && commitment.riskScore !== currentRisk) {
+    if (commitment?.id && commitment.riskScore !== currentRisk) {
       updateCommitment(commitment.id, { riskScore: currentRisk });
     }
-  }, [currentRisk, commitment, updateCommitment]);
+  }, [currentRisk, commitment?.id, commitment?.riskScore, updateCommitment]);
 
   const handleGeneratePlan = async () => {
     setShowPlan(true);

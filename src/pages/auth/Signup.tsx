@@ -22,9 +22,11 @@ export function Signup() {
         setAccessToken(credential.accessToken);
       }
       navigate("/onboarding/baseline");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to sign in. Please try again.");
+      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+        alert("Failed to sign in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

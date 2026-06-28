@@ -21,9 +21,11 @@ export function Login() {
         setAccessToken(credential.accessToken);
       }
       navigate("/app");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to log in. Please try again.");
+      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+        alert("Failed to log in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
