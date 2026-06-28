@@ -4,7 +4,11 @@ import { useAppStore } from "../../store";
 
 export function Baseline() {
   const navigate = useNavigate();
-  const { successRate, setSuccessRate } = useAppStore();
+  const { successRate, setSuccessRate, accessToken } = useAppStore();
+
+  if (!accessToken) {
+    return <Navigate to="/auth/login" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-paper p-6">

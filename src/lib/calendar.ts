@@ -23,7 +23,7 @@ export async function getFreeBusy(accessToken: string, daysRemaining: number) {
     }
 
     const data = await response.json();
-    const busyPeriods = data.calendars.primary.busy as { start: string; end: string }[];
+    const busyPeriods = (data.calendars?.primary?.busy || []) as { start: string; end: string }[];
     
     // Total hours in the period
     const totalHours = daysRemaining * 24;

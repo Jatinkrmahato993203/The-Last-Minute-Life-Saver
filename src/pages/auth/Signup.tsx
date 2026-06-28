@@ -58,9 +58,6 @@ export function Signup() {
           <Button onClick={handleLogin} disabled={loading || !consent} className="w-full">
             {loading ? "Connecting..." : "Continue with Google"}
           </Button>
-          <Button variant="ghost" onClick={() => navigate("/app")} className="w-full">
-            Skip for now
-          </Button>
         </div>
 
         <p className="mt-8 text-xs text-ink/50 font-sans">

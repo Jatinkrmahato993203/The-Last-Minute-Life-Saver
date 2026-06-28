@@ -29,7 +29,26 @@ export const useAppStore = create<AppState>()(
       setSuccessRate: (rate: number) => set({ successRate: rate }),
       accessToken: null,
       setAccessToken: (token: string | null) => set({ accessToken: token }),
-      commitments: [],
+      commitments: [
+        {
+          id: 'seed-1',
+          title: 'Data Structures Final',
+          category: 'Exam',
+          daysRemaining: 14,
+          riskScore: 65,
+          opportunityLoss: 15000,
+          estHoursNeeded: 30
+        },
+        {
+          id: 'seed-2',
+          title: 'Google STEP Application',
+          category: 'Placement',
+          daysRemaining: 3,
+          riskScore: 85,
+          opportunityLoss: 80000,
+          estHoursNeeded: 12
+        }
+      ],
       addCommitment: (c) => set((state) => ({ commitments: [...state.commitments, c] })),
       updateCommitment: (id, updates) => set((state) => ({
         commitments: state.commitments.map((c) => c.id === id ? { ...c, ...updates } : c)

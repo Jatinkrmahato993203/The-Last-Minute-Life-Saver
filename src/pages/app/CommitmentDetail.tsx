@@ -17,7 +17,9 @@ export function CommitmentDetail() {
   const [addedHours, setAddedHours] = useState(0);
   const [showPlan, setShowPlan] = useState(false);
   const [planText, setPlanText] = useState("");
+  const [proposedEvent, setProposedEvent] = useState<any>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
+  const [creatingEvent, setCreatingEvent] = useState(false);
 
   // Dynamic ledger values based on commitment to avoid identical hardcoded values
   const seed = commitment ? parseInt(commitment.id, 10) || 1 : 1;
@@ -92,10 +94,38 @@ export function CommitmentDetail() {
       
       const data = await response.json();
       setPlanText(data.plan);
+      if (data.proposedEvent) {
+        setProposedEvent(data.proposedEvent);
+      }
     } catch (e) {
       setPlanText("Block out time on your calendar daily and remove distractions.");
     } finally {
       setLoadingPlan(false);
+    }
+  };
+
+  const handleConfirmEvent = async () => {
+    if (!proposedEvent) return;
+    setCreatingEvent(true);
+    try {
+      const response = await fetch("/api/create-event", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
+        },
+        body: JSON.stringify(proposedEvent)
+      });
+      if (response.ok) {
+        setProposedEvent(null);
+        alert("Event created successfully!");
+      } else {
+        throw new Error("Failed to create event");
+      }
+    } catch (e) {
+      alert("Error creating event");
+    } finally {
+      setCreatingEvent(false);
     }
   };
 
@@ -214,6 +244,18 @@ export function CommitmentDetail() {
                         <p className="text-sm text-ink">{planText}</p>
                       </div>
                     </div>
+                    {proposedEvent && (
+                      <div className="mt-4 p-4 border border-amber/30 bg-amber/5">
+                        <h4 className="text-sm font-medium mb-1 text-ink">Proposed Calendar Event:</h4>
+                        <p className="text-xs text-ink/70 mb-3">
+                          {proposedEvent.title} <br/>
+                          {new Date(proposedEvent.startTime).toLocaleString()} - {new Date(proposedEvent.endTime).toLocaleTimeString()}
+                        </p>
+                        <Button onClick={handleConfirmEvent} disabled={creatingEvent} className="w-full text-xs h-8">
+                          {creatingEvent ? "Adding..." : "Add to Google Calendar"}
+                        </Button>
+                      </div>
+                    )}
                   </>
                 )}
               </motion.div>
