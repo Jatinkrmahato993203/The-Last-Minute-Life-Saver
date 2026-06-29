@@ -3,13 +3,15 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppStore } from "../../store";
 import { Button } from "../../components/ui/Button";
+import { getFreeBusy } from "../../lib/calendar";
 
 export function Dashboard() {
-  const { commitments, addCommitment } = useAppStore();
+  const { commitments, addCommitment, accessToken, successRate } = useAppStore();
   const sortedCommitments = [...commitments].sort((a, b) => b.riskScore - a.riskScore);
   const totalRiskAmount = sortedCommitments.reduce((acc, curr) => acc + curr.opportunityLoss, 0);
   
   const [isAdding, setIsAdding] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("Assignment");
   const [newDays, setNewDays] = useState(7);
@@ -23,15 +25,34 @@ export function Dashboard() {
     return "bg-sage";
   };
 
-  const handleAddSubmit = (e: FormEvent) => {
+  const handleAddSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!newTitle) return;
     
+    setIsSubmitting(true);
+    let freeHours = Math.max(2, newHours - 5 - 1);
+    if (accessToken) {
+      const hours = await getFreeBusy(accessToken, newDays);
+      if (hours !== null) freeHours = Math.round(hours);
+    }
+    
+    const userRate = successRate * 10;
+    const hourRatio = freeHours > 0 ? newHours / freeHours : 2;
+    
+    let calculatedRisk = 50;
+    if (hourRatio > 1.2) calculatedRisk += 30;
+    else if (hourRatio < 0.8) calculatedRisk -= 20;
+    
+    calculatedRisk += (100 - userRate) * 0.4;
+    if (newDays < 4) calculatedRisk += 20;
+    
+    const currentRisk = Math.min(100, Math.max(0, Math.round(calculatedRisk)));
+
     addCommitment({
       id: Math.random().toString(36).substring(7),
       title: newTitle,
       daysRemaining: newDays,
-      riskScore: 50, // This gets recalculated by CommitmentDetail
+      riskScore: currentRisk,
       opportunityLoss: newLoss,
       category: newCategory,
       estHoursNeeded: newHours
@@ -42,6 +63,7 @@ export function Dashboard() {
     setNewHours(10);
     setNewLoss(0);
     setIsAdding(false);
+    setIsSubmitting(false);
   };
 
   return (
@@ -102,7 +124,9 @@ export function Dashboard() {
                 <input type="number" value={newLoss} onChange={e => setNewLoss(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="0" />
               </div>
             </div>
-            <Button type="submit" className="w-full">Create Commitment</Button>
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? "Calculating Risk..." : "Create Commitment"}
+            </Button>
           </motion.form>
         )}
       </AnimatePresence>

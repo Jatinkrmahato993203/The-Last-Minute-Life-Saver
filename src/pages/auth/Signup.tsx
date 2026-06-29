@@ -37,7 +37,7 @@ export function Signup() {
       <div className="max-w-md w-full bg-white border border-rule rounded-none p-8 shadow-sm text-center">
         <h1 className="text-3xl mb-4">Connect your calendar</h1>
         <p className="text-ink/70 mb-6 font-sans">
-          Oracle needs read-only access to your Google Calendar to calculate your free time and upcoming deadlines.
+          Oracle needs read and write access to your Google Calendar to calculate true free time and autonomously schedule recovery blocks when you fall behind.
         </p>
         
         <div className="mb-8 text-left bg-ink/5 p-4 border border-rule">
@@ -49,7 +49,7 @@ export function Signup() {
               className="mt-1 accent-amber"
             />
             <span className="text-xs text-ink/70 font-sans leading-relaxed">
-              I consent to the processing of my calendar data for the purpose of risk calculation, in accordance with the Digital Personal Data Protection Act (DPDP).
+              I consent to the processing of my calendar data for the purpose of risk calculation and autonomous event scheduling, in accordance with the Digital Personal Data Protection Act (DPDP).
             </span>
           </label>
         </div>

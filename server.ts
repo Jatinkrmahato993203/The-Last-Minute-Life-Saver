@@ -34,7 +34,9 @@ async function startServer() {
       
       const data = await response.json();
       
-      if (process.env.GOOGLE_CLIENT_ID && data.aud !== process.env.GOOGLE_CLIENT_ID) {
+      if (!process.env.GOOGLE_CLIENT_ID) {
+        console.warn("WARNING: GOOGLE_CLIENT_ID is not set in environment variables. Token audience verification is skipped. This is a security risk in production.");
+      } else if (data.aud !== process.env.GOOGLE_CLIENT_ID) {
         return res.status(401).json({ error: "Invalid token audience" });
       }
 
