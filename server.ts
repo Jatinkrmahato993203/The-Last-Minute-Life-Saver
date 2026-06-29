@@ -31,6 +31,13 @@ async function startServer() {
       if (!response.ok) {
         return res.status(401).json({ error: "Invalid token" });
       }
+      
+      const data = await response.json();
+      
+      if (process.env.GOOGLE_CLIENT_ID && data.aud !== process.env.GOOGLE_CLIENT_ID) {
+        return res.status(401).json({ error: "Invalid token audience" });
+      }
+
       next();
     } catch (e) {
       return res.status(401).json({ error: "Token verification failed" });
@@ -103,8 +110,10 @@ Return a short recovery plan explaining your reasoning, and if possible, use the
       let response = await chat.sendMessage({ message: prompt });
       let proposedEvent = null;
 
-      // Handle function calls
-      if (response.functionCalls && response.functionCalls.length > 0) {
+      // Handle function calls in a loop
+      while (response.functionCalls && response.functionCalls.length > 0) {
+        const functionResponses = [];
+        
         for (const call of response.functionCalls) {
           if (call.name === "get_upcoming_events") {
             const days = Number(call.args.days) || 3;
@@ -127,32 +136,27 @@ Return a short recovery plan explaining your reasoning, and if possible, use the
               eventsText = "Error fetching calendar.";
             }
 
-            response = await chat.sendMessage({
-               message: [{
-                 functionResponse: {
-                   name: "get_upcoming_events",
-                   response: { events: eventsText }
-                 }
-               }]
+            functionResponses.push({
+              functionResponse: {
+                name: "get_upcoming_events",
+                response: { events: eventsText }
+              }
+            });
+          } else if (call.name === "propose_event") {
+            proposedEvent = call.args;
+            functionResponses.push({
+              functionResponse: {
+                name: "propose_event",
+                response: { status: "proposed to user" }
+              }
             });
           }
         }
-      }
-
-      // Check again if it proposed an event
-      if (response.functionCalls && response.functionCalls.length > 0) {
-        for (const call of response.functionCalls) {
-          if (call.name === "propose_event") {
-            proposedEvent = call.args;
-            response = await chat.sendMessage({
-               message: [{
-                 functionResponse: {
-                   name: "propose_event",
-                   response: { status: "proposed to user" }
-                 }
-               }]
-            });
-          }
+        
+        if (functionResponses.length > 0) {
+          response = await chat.sendMessage({ message: functionResponses });
+        } else {
+          break;
         }
       }
 
