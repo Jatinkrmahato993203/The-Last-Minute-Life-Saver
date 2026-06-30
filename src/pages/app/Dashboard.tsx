@@ -47,16 +47,11 @@ export function Dashboard() {
     }
     
     const userRate = successRate * 10;
-    const hourRatio = freeHours > 0 ? newHours / freeHours : 2;
+    const baseHourRatio = freeHours > 0 ? newHours / freeHours : newHours;
+    let baseRisk = (baseHourRatio * 20) + ((100 - userRate) * 0.3) + (40 / Math.max(1, newDays));
     
-    let calculatedRisk = 50;
-    if (hourRatio > 1.2) calculatedRisk += 30;
-    else if (hourRatio < 0.8) calculatedRisk -= 20;
-    
-    calculatedRisk += (100 - userRate) * 0.4;
-    if (newDays < 4) calculatedRisk += 20;
-    
-    const currentRisk = Math.min(100, Math.max(0, Math.round(calculatedRisk)));
+    // Smoothly cap base risk at 99 so it never gets stuck above 100
+    const currentRisk = Math.max(1, Math.min(99, Math.round(baseRisk)));
 
     addCommitment({
       id: Math.random().toString(36).substring(7),

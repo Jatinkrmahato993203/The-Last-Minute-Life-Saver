@@ -22,11 +22,9 @@ export function CommitmentDetail() {
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [creatingEvent, setCreatingEvent] = useState(false);
 
-  // Dynamic ledger values based on commitment to avoid identical hardcoded values
-  const seed = commitment ? parseInt(commitment.id, 10) || 1 : 1;
-  const estHoursNeeded = commitment?.estHoursNeeded || (10 + (seed * 5)); // Use provided or generate
+  const estHoursNeeded = commitment?.estHoursNeeded || 10;
   
-  const [freeCalendarHours, setFreeCalendarHours] = useState<number>(Math.max(2, estHoursNeeded - 5 - (seed * 2)));
+  const [freeCalendarHours, setFreeCalendarHours] = useState<number>(Math.max(2, estHoursNeeded - 5));
 
   useEffect(() => {
     if (accessToken && commitment?.daysRemaining) {
@@ -48,22 +46,20 @@ export function CommitmentDetail() {
     );
   }
 
-  const userRate = successRate * 10; // 0-10 to 0-100%
+  const userRate = successRate * 10;
   
-  // Calculate risk properly
+  const baseHourRatio = freeCalendarHours > 0 ? estHoursNeeded / freeCalendarHours : estHoursNeeded;
+  let baseRisk = (baseHourRatio * 20) + ((100 - userRate) * 0.3) + (40 / Math.max(1, commitment.daysRemaining));
+  
+  // Smoothly cap base risk at 99 so it never gets stuck above 100
+  baseRisk = Math.min(99, baseRisk);
+  
+  // Adding hours explicitly and proportionately reduces risk from the starting point
+  const riskReduction = addedHours * (baseRisk * 0.12);
+  const currentRisk = Math.max(1, Math.round(baseRisk - riskReduction));
+
   const totalFreeHours = freeCalendarHours + (addedHours * commitment.daysRemaining);
-  const hourRatio = totalFreeHours > 0 ? estHoursNeeded / totalFreeHours : 2;
   const deficit = Math.max(0, estHoursNeeded - totalFreeHours);
-  
-  // f(days_remaining, estimated_task_hours / available_free_calendar_hours, user_historical_on_time_rate)
-  let calculatedRisk = 50; 
-  if (hourRatio > 1.2) calculatedRisk += 30;
-  else if (hourRatio < 0.8) calculatedRisk -= 20;
-  
-  calculatedRisk += (100 - userRate) * 0.4; // lower history = higher risk
-  if (commitment.daysRemaining < 4) calculatedRisk += 20;
-  
-  const currentRisk = Math.min(100, Math.max(0, Math.round(calculatedRisk)));
 
   useEffect(() => {
     if (commitment?.id && commitment.riskScore !== currentRisk) {

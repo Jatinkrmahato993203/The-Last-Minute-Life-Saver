@@ -25,5 +25,7 @@ export const getFirebaseAuth = (): Auth => {
 export const getGoogleProvider = (): GoogleAuthProvider => {
   const provider = new GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/calendar.events');
+  provider.addScope('https://www.googleapis.com/auth/calendar.readonly');
+  provider.addScope('https://www.googleapis.com/auth/calendar.freebusy');
   return provider;
 };
