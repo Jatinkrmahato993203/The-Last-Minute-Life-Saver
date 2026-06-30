@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppStore } from "../../store";
@@ -18,6 +18,11 @@ export function Dashboard() {
   const [newHours, setNewHours] = useState(10);
   const [newLoss, setNewLoss] = useState(0);
 
+  const isAddingRef = useRef(isAdding);
+  useEffect(() => {
+    isAddingRef.current = isAdding;
+  }, [isAdding]);
+
   const getRiskColor = (score: number) => {
     if (score > 90) return "bg-brick";
     if (score > 70) return "bg-burnt";
@@ -34,6 +39,11 @@ export function Dashboard() {
     if (accessToken) {
       const hours = await getFreeBusy(accessToken, newDays);
       if (hours !== null) freeHours = Math.round(hours);
+    }
+    
+    if (!isAddingRef.current) {
+      setIsSubmitting(false);
+      return;
     }
     
     const userRate = successRate * 10;
@@ -113,11 +123,11 @@ export function Dashboard() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Days Remaining</label>
-                <input type="number" value={newDays} onChange={e => setNewDays(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="1" required />
+                <input type="number" value={newDays} onChange={e => setNewDays(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="1" max="365" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Est. Hours Needed</label>
-                <input type="number" value={newHours} onChange={e => setNewHours(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="1" required />
+                <input type="number" value={newHours} onChange={e => setNewHours(Number(e.target.value))} className="w-full border border-rule px-3 py-2" min="1" max="10000" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Opportunity Cost (₹)</label>

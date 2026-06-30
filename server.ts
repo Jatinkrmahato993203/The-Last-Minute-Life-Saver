@@ -9,7 +9,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per window
+  max: 50, // Limit each IP to 50 requests per window
   message: { error: "Too many requests, please try again later." }
 });
 
@@ -18,6 +18,13 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof SyntaxError && 'body' in err) {
+      return res.status(400).json({ error: "Invalid JSON payload" });
+    }
+    next();
+  });
 
   const requireAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const authHeader = req.headers.authorization;

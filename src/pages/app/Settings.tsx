@@ -7,7 +7,27 @@ export function Settings() {
   const navigate = useNavigate();
   const { successRate, setSuccessRate, accessToken, setAccessToken } = useAppStore();
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    if (accessToken) {
+      try {
+        await fetch(`https://oauth2.googleapis.com/revoke?token=${accessToken}`, {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+          }
+        });
+      } catch (e) {
+        console.error("Failed to revoke token", e);
+      }
+    }
+    
+    try {
+      const { getFirebaseAuth } = await import("../../lib/firebase");
+      await getFirebaseAuth().signOut();
+    } catch (e) {
+      console.error("Failed to sign out of Firebase", e);
+    }
+    
     setAccessToken(null);
     navigate("/auth/login");
   };
@@ -25,7 +45,7 @@ export function Settings() {
       <div className="space-y-8">
         <section className="bg-white border border-rule p-8 shadow-sm">
           <h2 className="text-xl font-display text-ink mb-2">Historical Baseline</h2>
-          <p className="text-sm text-ink/70 mb-6">Update your base track record. This influences all your risk calculations.</p>
+          <p className="text-sm text-ink/70 mb-6">Update your base track record. This influences risk calculations (though extreme urgency may override it).</p>
           
           <div className="mb-6">
             <div className="flex justify-between items-end mb-4">
@@ -54,7 +74,7 @@ export function Settings() {
               <span className="font-medium text-ink">Google Calendar</span>
             </div>
             {accessToken ? (
-              <Button onClick={handleDisconnect} variant="ghost" className="text-brick hover:text-brick hover:bg-brick/5">Disconnect</Button>
+              <Button onClick={handleDisconnect} variant="ghost" className="text-brick hover:text-brick hover:bg-brick/5">Disconnect & Log Out</Button>
             ) : (
               <span className="text-ink/50 text-sm">Disconnected</span>
             )}

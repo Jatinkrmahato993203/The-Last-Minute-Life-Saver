@@ -17,6 +17,7 @@ export function CommitmentDetail() {
   const [addedHours, setAddedHours] = useState(0);
   const [showPlan, setShowPlan] = useState(false);
   const [planText, setPlanText] = useState("");
+  const [hasAiError, setHasAiError] = useState(false);
   const [proposedEvent, setProposedEvent] = useState<any>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [creatingEvent, setCreatingEvent] = useState(false);
@@ -73,6 +74,7 @@ export function CommitmentDetail() {
   const handleGeneratePlan = async () => {
     setShowPlan(true);
     setLoadingPlan(true);
+    setHasAiError(false);
     try {
       const response = await fetch("/api/generate-plan", {
         method: "POST",
@@ -89,6 +91,9 @@ export function CommitmentDetail() {
       });
       
       if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error("Rate limit exceeded. Try again later.");
+        }
         throw new Error("Failed to generate plan");
       }
       
@@ -97,8 +102,12 @@ export function CommitmentDetail() {
       if (data.proposedEvent) {
         setProposedEvent(data.proposedEvent);
       }
-    } catch (e) {
-      setPlanText("Block out time on your calendar daily and remove distractions.");
+    } catch (e: any) {
+      setHasAiError(true);
+      setPlanText(e.message === "Rate limit exceeded. Try again later." 
+        ? "Rate limit exceeded. Please try again in a few minutes."
+        : "Block out time on your calendar daily and remove distractions."
+      );
     } finally {
       setLoadingPlan(false);
     }
@@ -130,7 +139,7 @@ export function CommitmentDetail() {
   };
 
   const handleDelete = () => {
-    if (id) {
+    if (id && window.confirm("Are you sure you want to delete this commitment?")) {
       deleteCommitment(id);
       navigate("/app");
     }
@@ -218,6 +227,9 @@ export function CommitmentDetail() {
                 onChange={(e) => setAddedHours(Number(e.target.value))}
                 className="w-full accent-amber"
               />
+              {currentRisk === 100 && addedHours === 6 && (
+                <p className="text-xs text-brick mt-3">Even at max effort, this deadline is high-risk. Consider focusing elsewhere or renegotiating the deadline.</p>
+              )}
             </div>
 
             {!showPlan ? (
@@ -240,8 +252,11 @@ export function CommitmentDetail() {
                     </p>
                     <div className="space-y-3">
                       <div className="flex gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
-                        <p className="text-sm text-ink">{planText}</p>
+                        <div className={`w-1.5 h-1.5 rounded-full ${hasAiError ? 'bg-brick' : 'bg-amber'} mt-1.5 shrink-0`} />
+                        <div>
+                          {hasAiError && <span className="block text-xs font-bold text-brick mb-1 uppercase tracking-wider">AI Plan Unavailable</span>}
+                          <p className={`text-sm ${hasAiError ? 'text-ink/60 italic' : 'text-ink'}`}>{planText}</p>
+                        </div>
                       </div>
                     </div>
                     {proposedEvent && (

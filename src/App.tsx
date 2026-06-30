@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MarketingLayout } from "./components/layout/MarketingLayout";
 import { AppLayout } from "./components/layout/AppLayout";
 import { Home } from "./pages/marketing/Home";
@@ -44,6 +44,9 @@ export default function App() {
           <Route path="loss-overview" element={<LossOverview />} />
           <Route path="settings" element={<Settings />} />
         </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

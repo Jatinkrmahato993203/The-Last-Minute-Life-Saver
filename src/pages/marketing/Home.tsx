@@ -8,8 +8,8 @@ export function Home() {
   const [daysInput, setDaysInput] = useState("5");
   const [category, setCategory] = useState("Internship");
 
-  const days = parseInt(daysInput, 10);
-  const isInvalid = isNaN(days) || days < 0;
+  const days = Number(daysInput);
+  const isInvalid = isNaN(days) || days < 0 || daysInput.trim() === "";
 
   // Simple static calculation for the hero calculator
   const baseRisk = isInvalid ? "--" : (days < 3 ? 85 : days < 7 ? 60 : 30);
@@ -57,7 +57,7 @@ export function Home() {
                 <div className="flex items-baseline gap-2">
                   <Input 
                     id="days-input"
-                    type="number" 
+                    type="text" 
                     min="0"
                     value={daysInput} 
                     onChange={(e) => setDaysInput(e.target.value)}
@@ -65,6 +65,7 @@ export function Home() {
                   />
                   <span className="font-mono text-ink/70">days</span>
                 </div>
+                {isInvalid && <p className="text-xs text-brick mt-2">Please enter a valid number</p>}
               </div>
             </div>
 

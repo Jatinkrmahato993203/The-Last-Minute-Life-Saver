@@ -21,7 +21,14 @@ export function Signup() {
       if (credential?.accessToken) {
         setAccessToken(credential.accessToken);
       }
-      navigate("/onboarding/baseline");
+      const { getAdditionalUserInfo } = await import('firebase/auth');
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      
+      if (additionalUserInfo?.isNewUser) {
+        navigate("/onboarding/baseline");
+      } else {
+        navigate("/app");
+      }
     } catch (error: any) {
       console.error(error);
       if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
